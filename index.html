@@ -413,14 +413,27 @@
     const yestStr = formatDate(getYesterday());
     const todayStr = formatDate(new Date());
 
-     const prompt = 'Today is ' + todayStr + '. Yesterday was ' + yestStr + '. Give me all final sports scores from yesterday for MLB, NBA, NHL, NFL, soccer, and tennis. Respond with ONLY a JSON object, no markdown, no explanation. Keys: mlb, nba, nhl, nfl, soccer, tennis. Each has a games array. Each game has: teams array with name and score, status "Final". For MLB also include innings array and hits/errors. For NBA/NFL include quarters array. For NHL include periods array. Include a stats array with notable stats.';
+     const prompt = 'Today is ' + todayStr + '. Yesterday was ' + yestStr + '. Give me all final sports scores from yesterday for MLB, NBA, NHL, NFL, soccer, and tennis. Respond with ONLY a JSON object, no markdown, no explanation. Keys: mlb, nba, nhl, nfl, soccer, tennis. Each has a games array. Each game has: teams array with name and score, status "Final". For MLB also include innings array and hits/errors. For NBA/NFL include quarters array. For NHL include periods array.';
+
+    try {
+      const response = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
       const jsonMatch = textBlocks.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON in response');
-
       allData = JSON.parse(jsonMatch[0]);
       renderScores();
-    } catch (err) {
-      root.innerHTML = `<div class="loading-block">Could not load scores — ${err.message}</div>`;
+    }    } catch (err) {
+      if (err.message.includes('rate_limit') || err.message.includes('token')) {
+        root.innerHTML = '<div class="loading-block">Rate limit hit — retrying in 60 seconds...</div>';
+        setTimeout(fetchAllScores, 60000);
+      } else {
+        root.innerHTML = '<div class="loading-block">Could not load scores — ' + err.message + '</div>';
+      };
     }
   }
 
