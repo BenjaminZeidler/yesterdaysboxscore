@@ -413,17 +413,7 @@
     const yestStr = formatDate(getYesterday());
     const todayStr = formatDate(new Date());
 
-    const prompt = 'Today is ' + todayStr + '. Yesterday was ' + yestStr + '. Provide yesterday\'s final sports scores for MLB, NBA, NHL, NFL, soccer, and tennis. Return ONLY raw JSON, no markdown, no explanation, using this structure: {"mlb":{"games":[{"teams":[{"name":"Away","score":3,"hits":7,"errors":0},{"name":"Home","score":1,"hits":5,"errors":1}],"innings":[{"away":0,"home":0},{"away":2,"home":0},{"away":0,"home":1},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0}],"status":"Final","venue":"Stadium"}]},"nba":{"games":[{"teams":[{"name":"Away","score":110},{"name":"Home","score":105}],"quarters":[{"away":28,"home":26},{"away":27,"home":25},{"away":28,"home":27},{"away":27,"home":27}],"status":"Final","stats":[{"label":"Leading scorer","value":"Name - 28 pts"}]}]},"nhl":{"games":[]},"nfl":{"games":[]},"soccer":{"games":[]},"tennis":{"games":[]}} Fill in ALL real games from yesterday only.';
-
-    try {
-      const response = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
-      });
-
-      const data = await response.json();
-      const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+     const prompt = 'Today is ' + todayStr + '. Yesterday was ' + yestStr + '. Give me all final sports scores from yesterday for MLB, NBA, NHL, NFL, soccer, and tennis. Respond with ONLY a JSON object, no markdown, no explanation. Keys: mlb, nba, nhl, nfl, soccer, tennis. Each has a games array. Each game has: teams array with name and score, status "Final". For MLB also include innings array and hits/errors. For NBA/NFL include quarters array. For NHL include periods array. Include a stats array with notable stats.';
       const jsonMatch = textBlocks.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON in response');
 
