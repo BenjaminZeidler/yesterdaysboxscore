@@ -8,8 +8,6 @@ export default async function handler(req, res) {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yestStr = yesterday.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const prompt = 'Today is ' + todayStr + '. Yesterday was ' + yestStr + '. Search the web and list all final sports scores from yesterday. Return ONLY a raw JSON object with these keys: mlb, nba, nhl, nfl, soccer, tennis. Each key has a games array. Each game needs: teams array with name and score, status Final. MLB needs innings array plus hits and errors on team objects. NBA and NFL need quarters array. NHL needs periods array. Add stats array with 1-2 notable stats per game. Only include sports with games played. No markdown, no explanation, just JSON.';
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -23,8 +21,12 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
+        system: 'You are a sports data API. You only respond with raw JSON objects. Never include explanations, apologies, or markdown. If you cannot find data for a sport, use an empty array. Always respond with valid JSON starting with { and ending with }.',
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{
+          role: 'user',
+          content: 'Search for all final sports scores from ' + yestStr + '. Return a JSON object with keys mlb, nba, nhl, nfl, soccer, tennis. Each has a games array. Each game has: teams [{name, score}], status "Final". MLB adds innings [{away,home}], hits and errors on teams. NBA/NFL add quarters [{away,home}]. NHL adds periods [{away,home}]. Stats array with {label,value} for notable stats.'
+        }],
       }),
     });
 
@@ -33,11 +35,10 @@ export default async function handler(req, res) {
 
     const text = (apiData.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
     const match = text.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON in response. Got: ' + text.slice(0, 200));
+    if (!match) throw new Error('No JSON. Got: ' + text.slice(0, 300));
 
     const scores = JSON.parse(match[0]);
-    const today = new Date().toISOString().slice(0, 10);
-    const cacheKey = 'scores-' + today;
+    const cacheKey = 'scores-' + new Date().toISOString().slice(0, 10);
 
     await fetch(process.env.KV_REST_API_URL + '/set/' + cacheKey + '/ex/86400', {
       method: 'POST',
