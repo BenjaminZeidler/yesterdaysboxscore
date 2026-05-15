@@ -1,8 +1,9 @@
-json{
+{
   "version": 2,
-  "functions": {
-    "api/scores.js": {
-      "maxDuration": 60
+  "crons": [
+    {
+      "path": "/api/fetch-scores",
+      "schedule": "0 8 * * *"
     }
-  }
+  ]
 }
