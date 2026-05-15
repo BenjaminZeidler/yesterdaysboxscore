@@ -30,7 +30,8 @@ export default async function handler(req, res) {
 
     const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
     const match = text.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON in response');
+if (!match) throw new Error('No JSON in response. Got: ' + text.slice(0, 200));
+
 
     const scores = JSON.parse(match[0]);
     const today = new Date().toISOString().slice(0, 10);
