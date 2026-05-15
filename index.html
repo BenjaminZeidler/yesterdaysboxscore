@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yesterday's Box Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --paper-dark: #ede8d8;
+    --rule: #0a0a0a;
+    --muted: #555;
+  }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  /* MASTHEAD */
+  .masthead {
+    border-bottom: 4px double var(--rule);
+    padding: 0.75rem 2rem 0.5rem;
+    text-align: center;
+    background: var(--paper);
+  }
+
+  .masthead-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 10px;
+    font-family: 'Libre Baskerville', serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 4px;
+  }
+
+  .nameplate {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--ink);
+    margin: 6px 0 2px;
+  }
+
+  .nameplate-sub {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 11px;
+    font-style: italic;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 3px 0;
+    margin: 4px auto;
+    max-width: 600px;
+  }
+
+  /* SPORT TOGGLE */
+  .sport-nav {
+    background: var(--ink);
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .sport-nav::-webkit-scrollbar { display: none; }
+  .sport-nav-inner {
+    display: inline-flex;
+    min-width: 100%;
+    justify-content: center;
+  }
+
+  .sport-btn {
+    background: none;
+    border: none;
+    border-right: 1px solid #333;
+    color: #aaa;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .sport-btn:last-child { border-right: none; }
+  .sport-btn:hover { color: #fff; background: #1a1a1a; }
+  .sport-btn.active { color: var(--paper); background: #222; font-weight: 700; }
+
+  /* MAIN CONTENT */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+  }
+
+  .date-line {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 2rem 0 0.75rem;
+  }
+  .section-header-line { flex: 1; height: 2px; background: var(--rule); }
+  .section-header h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* SCORES GRID */
+  .scores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 2rem;
+  }
+
+  .game-card {
+    background: var(--paper);
+    padding: 0.85rem 1rem;
+  }
+
+  .game-status {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .game-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .game-table th {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--muted);
+    text-align: right;
+    padding: 0 4px 3px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .game-table th:first-child { text-align: left; }
+  .game-table td {
+    padding: 5px 4px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px dotted #c8c0ae;
+  }
+  .game-table tr:last-child td { border-bottom: none; }
+  .game-table td:first-child {
+    text-align: left;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .game-table td.final-score {
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Playfair Display', serif;
+  }
+  .game-table td.loser { color: var(--muted); }
+  .game-table td.winner-score { color: var(--ink); }
+
+  .stat-section {
+    margin-top: 6px;
+    border-top: 1px dotted #bbb;
+    padding-top: 5px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .stat-row span:last-child { font-style: italic; }
+
+  /* LOADING / ERROR */
+  .loading-block {
+    text-align: center;
+    padding: 4rem 1rem;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'}
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-top: 4px double var(--rule);
+    padding: 1rem 2rem;
+    font-style: italic;
+  }
+
+  @media (max-width: 600px) {
+    .page { padding: 1rem; }
+    .masthead { padding: 0.5rem 1rem; }
+    .masthead-top { font-size: 9px; }
+    .sport-btn { padding: 8px 12px; font-size: 10px; }
+    .scores-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span id="dateline">—</span>
+    <span>Established 2025</span>
+    <span>Final Scores Only</span>
+  </div>
+  <div class="nameplate">Yesterday's Box Score</div>
+  <div class="nameplate-sub">All the final scores — nothing more, nothing less</div>
+</header>
+
+<nav class="sport-nav" aria-label="Sport filter">
+  <div class="sport-nav-inner">
+    <button class="sport-btn active" data-sport="all">All Sports</button>
+    <button class="sport-btn" data-sport="mlb">Baseball</button>
+    <button class="sport-btn" data-sport="nba">Basketball</button>
+    <button class="sport-btn" data-sport="nhl">Hockey</button>
+    <button class="sport-btn" data-sport="nfl">Football</button>
+    <button class="sport-btn" data-sport="soccer">Soccer</button>
+    <button class="sport-btn" data-sport="tennis">Tennis</button>
+  </div>
+</nav>
+
+<main class="page">
+  <p class="date-line">Scores from <span id="yesterday-str"></span></p>
+  <div id="scores-root">
+    <div class="loading-block"><span class="loading-dots">Fetching yesterday's scores</span></div>
+  </div>
+</main>
+
+<footer>
+  All scores reflect final results from yesterday's games &mdash; yesterdaysboxscore.com
+</footer>
+
+<script>
+  // ─── CONFIG ────────────────────────────────────────────────────────────────
+  // After deploying to Vercel, replace this with your actual Vercel project URL
+  // e.g. 'https://yesterdaysboxscore.vercel.app/api/scores'
+  const PROXY_URL = 'https://YOUR-VERCEL-PROJECT.vercel.app/api/scores';
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const SPORTS_META = {
+    mlb:    'Major League Baseball',
+    nba:    'NBA Basketball',
+    nhl:    'NHL Hockey',
+    nfl:    'NFL Football',
+    soccer: 'Soccer',
+    tennis: 'Tennis',
+  };
+
+  function getYesterday() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  function formatDate(d) {
+    return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  const yest = getYesterday();
+  document.getElementById('yesterday-str').textContent = formatDate(yest);
+  document.getElementById('dateline').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  }).toUpperCase();
+
+  let activeSport = 'all';
+  let allData = {};
+
+  document.querySelectorAll('.sport-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeSport = btn.dataset.sport;
+      renderScores();
+    });
+  });
+
+  function renderScores() {
+    const root = document.getElementById('scores-root');
+    root.innerHTML = '';
+    const sportsToShow = activeSport === 'all' ? Object.keys(allData) : [activeSport];
+    let anyContent = false;
+
+    for (const sport of sportsToShow) {
+      const data = allData[sport];
+      if (!data || !data.games || data.games.length === 0) continue;
+      anyContent = true;
+
+      const secHeader = document.createElement('div');
+      secHeader.className = 'section-header';
+      secHeader.innerHTML = `<div class="section-header-line"></div><h2>${SPORTS_META[sport] || sport.toUpperCase()}</h2><div class="section-header-line"></div>`;
+      root.appendChild(secHeader);
+
+      const grid = document.createElement('div');
+      grid.className = 'scores-grid';
+      for (const game of data.games) {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = buildGameCard(game, sport);
+        grid.appendChild(card);
+      }
+      root.appendChild(grid);
+    }
+
+    if (!anyContent) {
+      root.innerHTML = '<div class="loading-block">No final scores found for yesterday in this sport.</div>';
+    }
+  }
+
+  function buildGameCard(game, sport) {
+    const { teams, innings, quarters, periods, stats, status, venue } = game;
+    if (!teams || teams.length < 2) return '';
+
+    const [away, home] = teams;
+    const awayWin = away.score > home.score;
+    const homeWin = home.score > away.score;
+
+    let headerCols = '', awayRow = '', homeRow = '';
+
+    if (sport === 'mlb' && innings && innings.length > 0) {
+      headerCols = innings.map((_, i) => `<th>${i+1}</th>`).join('') + `<th style="padding-left:8px">R</th><th>H</th><th>E</th>`;
+      const awayInnings = innings.map(inn => `<td>${inn.away ?? '-'}</td>`).join('');
+      const homeInnings = innings.map(inn => `<td>${inn.home ?? '-'}</td>`).join('');
+      awayRow = `${awayInnings}<td class="final-score ${awayWin?'winner-score':'loser'}" style="padding-left:8px">${away.score}</td><td class="${awayWin?'winner-score':'loser'}">${away.hits??'-'}</td><td class="${awayWin?'winner-score':'loser'}">${away.errors??'-'}</td>`;
+      homeRow = `${homeInnings}<td class="final-score ${homeWin?'winner-score':'loser'}" style="padding-left:8px">${home.score}</td><td class="${homeWin?'winner-score':'loser'}">${home.hits??'-'}</td><td class="${homeWin?'winner-score':'loser'}">${home.errors??'-'}</td>`;
+    } else if ((sport === 'nba' || sport === 'nfl') && quarters && quarters.length > 0) {
+      headerCols = quarters.map((_, i) => `<th>${i < 4 ? 'Q'+(i+1) : 'OT'+(i-3)}</th>`).join('') + `<th style="padding-left:8px">F</th>`;
+      const awayQs = quarters.map(q => `<td>${q.away ?? '-'}</td>`).join('');
+      const homeQs = quarters.map(q => `<td>${q.home ?? '-'}</td>`).join('');
+      awayRow = `${awayQs}<td class="final-score ${awayWin?'winner-score':'loser'}" style="padding-left:8px">${away.score}</td>`;
+      homeRow = `${homeQs}<td class="final-score ${homeWin?'winner-score':'loser'}" style="padding-left:8px">${home.score}</td>`;
+    } else if (sport === 'nhl' && periods && periods.length > 0) {
+      headerCols = periods.map((_, i) => `<th>${i < 3 ? (i+1)+'P' : 'OT'}</th>`).join('') + `<th style="padding-left:8px">F</th>`;
+      const awayPs = periods.map(p => `<td>${p.away ?? '-'}</td>`).join('');
+      const homePs = periods.map(p => `<td>${p.home ?? '-'}</td>`).join('');
+      awayRow = `${awayPs}<td class="final-score ${awayWin?'winner-score':'loser'}" style="padding-left:8px">${away.score}</td>`;
+      homeRow = `${homePs}<td class="final-score ${homeWin?'winner-score':'loser'}" style="padding-left:8px">${home.score}</td>`;
+    } else {
+      headerCols = `<th>Score</th>`;
+      awayRow = `<td class="final-score ${awayWin?'winner-score':'loser'}">${away.score}</td>`;
+      homeRow = `<td class="final-score ${homeWin?'winner-score':'loser'}">${home.score}</td>`;
+    }
+
+    const statsHtml = stats && stats.length > 0
+      ? `<div class="stat-section">${stats.map(s => `<div class="stat-row"><span>${s.label}</span><span>${s.value}</span></div>`).join('')}</div>`
+      : '';
+
+    return `
+      <div class="game-status">${status || 'Final'}${venue ? ' &bull; ' + venue : ''}</div>
+      <table class="game-table">
+        <thead><tr><th></th>${headerCols}</tr></thead>
+        <tbody>
+          <tr><td>${away.name}</td>${awayRow}</tr>
+          <tr><td>${home.name}</td>${homeRow}</tr>
+        </tbody>
+      </table>
+      ${statsHtml}
+    `;
+  }
+
+  async function fetchAllScores() {
+    const root = document.getElementById('scores-root');
+    root.innerHTML = '<div class="loading-block"><span class="loading-dots">Fetching yesterday\'s scores</span></div>';
+
+    const yestStr = formatDate(getYesterday());
+    const todayStr = formatDate(new Date());
+
+    const prompt = `Today is ${todayStr}. Yesterday was ${yestStr}.
+
+Please search the web and provide yesterday's FINAL sports scores for ALL of the following leagues where games were played: MLB, NBA, NHL, NFL, MLS and major soccer leagues (EPL, La Liga, Champions League if applicable), and any notable tennis results.
+
+Return ONLY a JSON object. No preamble, no explanation, no markdown fences. Structure:
+
+{
+  "mlb": { "games": [ { "teams": [{"name":"Away Team","score":4,"hits":8,"errors":1},{"name":"Home Team","score":2,"hits":6,"errors":0}], "innings": [{"away":0,"home":0},...], "status": "Final", "venue": "Ballpark Name" } ] },
+  "nba": { "games": [ { "teams": [{"name":"Away","score":112},{"name":"Home","score":105}], "quarters": [{"away":28,"home":24},{"away":31,"home":27},{"away":25,"home":29},{"away":28,"home":25}], "status": "Final", "stats": [{"label":"Leading scorer","value":"Name — 31 pts"}] } ] },
+  "nhl": { "games": [ { "teams": [{"name":"Away","score":3},{"name":"Home","score":2}], "periods": [{"away":1,"home":0},{"away":1,"home":1},{"away":1,"home":1}], "status": "Final", "stats": [{"label":"Game-winning goal","value":"Player Name"}] } ] },
+  "nfl": { "games": [] },
+  "soccer": { "games": [ { "teams": [{"name":"Team A","score":2},{"name":"Team B","score":1}], "status": "Final — Premier League", "stats": [{"label":"Goals","value":"Scorer (28'), Scorer (67')"}] } ] },
+  "tennis": { "games": [ { "teams": [{"name":"Player A","score":2},{"name":"Player B","score":0}], "status": "Final — Tournament Name", "stats": [{"label":"Score","value":"6-3, 6-4"}] } ] }
+}
+
+Only include sports where games were actually played yesterday. Use empty arrays for sports with no games. Provide ALL games for each active league, not just a sample.`;
+
+    try {
+      const response = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+      const jsonMatch = textBlocks.replace(/```json|```/g, '').trim().match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON in response');
+
+      allData = JSON.parse(jsonMatch[0]);
+      renderScores();
+    } catch (err) {
+      root.innerHTML = `<div class="loading-block">Could not load scores — ${err.message}</div>`;
+    }
+  }
+
+  fetchAllScores();
+</script>
+</body>
+</html>
