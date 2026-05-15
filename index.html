@@ -413,22 +413,15 @@
     const yestStr = formatDate(getYesterday());
     const todayStr = formatDate(new Date());
 
-    const prompt = `Today is ${todayStr}. Yesterday was ${yestStr}.
+    const prompt = 'Today is ${todayStr}. Yesterday was ${yestStr}.
 
-Please search the web and provide yesterday's FINAL sports scores for ALL of the following leagues where games were played: MLB, NBA, NHL, NFL, MLS and major soccer leagues (EPL, La Liga, Champions League if applicable), and any notable tennis results.
+You must respond with ONLY a JSON object, nothing else. No explanation, no markdown, no backticks. Just raw JSON.
 
-Return ONLY a JSON object. No preamble, no explanation, no markdown fences. Structure:
+Give me yesterday's final sports scores. Use this exact structure:
 
-{
-  "mlb": { "games": [ { "teams": [{"name":"Away Team","score":4,"hits":8,"errors":1},{"name":"Home Team","score":2,"hits":6,"errors":0}], "innings": [{"away":0,"home":0},...], "status": "Final", "venue": "Ballpark Name" } ] },
-  "nba": { "games": [ { "teams": [{"name":"Away","score":112},{"name":"Home","score":105}], "quarters": [{"away":28,"home":24},{"away":31,"home":27},{"away":25,"home":29},{"away":28,"home":25}], "status": "Final", "stats": [{"label":"Leading scorer","value":"Name — 31 pts"}] } ] },
-  "nhl": { "games": [ { "teams": [{"name":"Away","score":3},{"name":"Home","score":2}], "periods": [{"away":1,"home":0},{"away":1,"home":1},{"away":1,"home":1}], "status": "Final", "stats": [{"label":"Game-winning goal","value":"Player Name"}] } ] },
-  "nfl": { "games": [] },
-  "soccer": { "games": [ { "teams": [{"name":"Team A","score":2},{"name":"Team B","score":1}], "status": "Final — Premier League", "stats": [{"label":"Goals","value":"Scorer (28'), Scorer (67')"}] } ] },
-  "tennis": { "games": [ { "teams": [{"name":"Player A","score":2},{"name":"Player B","score":0}], "status": "Final — Tournament Name", "stats": [{"label":"Score","value":"6-3, 6-4"}] } ] }
-}
+{"mlb":{"games":[{"teams":[{"name":"Away Team","score":3,"hits":7,"errors":0},{"name":"Home Team","score":1,"hits":5,"errors":1}],"innings":[{"away":0,"home":0},{"away":1,"home":0},{"away":0,"home":0},{"away":2,"home":0},{"away":0,"home":1},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0},{"away":0,"home":0}],"status":"Final","venue":"Stadium Name"}]},"nba":{"games":[{"teams":[{"name":"Away","score":110},{"name":"Home","score":105}],"quarters":[{"away":28,"home":26},{"away":27,"home":25},{"away":28,"home":27},{"away":27,"home":27}],"status":"Final","stats":[{"label":"Leading scorer","value":"Player — 28 pts"}]}]},"nhl":{"games":[]},"nfl":{"games":[]},"soccer":{"games":[]},"tennis":{"games":[]}}
 
-Only include sports where games were actually played yesterday. Use empty arrays for sports with no games. Provide ALL games for each active league, not just a sample.`;
+Fill in real scores from yesterday. Only include sports with actual games. Return raw JSON only.';
 
     try {
       const response = await fetch(PROXY_URL, {
