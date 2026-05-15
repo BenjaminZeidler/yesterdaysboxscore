@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "crons": [
-    {
-      "path": "/api/fetch-scores",
-      "schedule": "0 8 * * *"
+  "functions": {
+    "api/scores.js": {
+      "maxDuration": 60
     }
-  ]
+  }
 }
